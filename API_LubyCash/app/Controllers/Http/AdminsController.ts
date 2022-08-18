@@ -65,7 +65,7 @@ export default class AdminsController {
     return response.ok({userFind})
   }
 
-  public async show({request, response, params}: HttpContextContract) {
+  public async show({ response, params}: HttpContextContract) {
     const userSecureId = params.id
 
     try {
