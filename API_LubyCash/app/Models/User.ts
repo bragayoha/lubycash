@@ -1,11 +1,17 @@
 import { DateTime } from 'luxon'
 import { BaseModel, beforeCreate, beforeSave, column, ManyToMany, manyToMany } from '@ioc:Adonis/Lucid/Orm'
 
+import {compose} from '@ioc:Adonis/Core/Helpers'
+import { Filterable } from '@ioc:Adonis/Addons/LucidFilter'
+import ClientFilter from '../Models/Filters/ClientFilter'
+
 import {v4 as uuidv4} from 'uuid'
 import Role from './Role'
 import Hash from '@ioc:Adonis/Core/Hash'
 
-export default class User extends BaseModel {
+export default class User extends compose(BaseModel, Filterable) {
+  public static $filter = () => ClientFilter
+
   @column({ isPrimary: true })
   public id: number
 
