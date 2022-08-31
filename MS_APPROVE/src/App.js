@@ -1,6 +1,6 @@
 const express = require('express')
-const kafka = require('./src/kafka')
+const kafka = require('./kafka')
 
 const consumer = kafka.consumer({groupId: 'create_new_client'})
-const topic = 
+const topic = ''
 const app = express()

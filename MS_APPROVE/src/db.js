@@ -1,8 +1,8 @@
 const mysql = require('mysql')
 
 const connection = mysql.createConnection({
-    host: '',
-    user: '',
+    host: 'db-appove',
+    user: 'root',
     password: ''
 })
 
