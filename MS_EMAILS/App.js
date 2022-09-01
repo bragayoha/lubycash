@@ -1,3 +1,3 @@
-const welcomeEmail = require('./consumers/send_welcome_email')
+const statusEmail = require('./consumers/send_status_email')
 
-welcomeEmail.runSendWelcomeEmail().catch(console.error)
+statusEmail.runSendStatusEmail().catch(console.error)

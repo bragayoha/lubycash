@@ -1,11 +1,11 @@
 const kafka = require('../src/kafka')
 const transporter = require('../src/nodeMailer')
 
-const consumer = kafka.consumer({groupId: 'send_welcome_email'})
+const consumer = kafka.consumer({groupId: 'send_status_email'})
 
-const topic = 'send_welcome_email'
+const topic = 'send_status_email'
 
-async function runSendWelcomeEmail() {
+async function runSendStatusEmail() {
     await consumer.connect()
 
     await consumer.subscribe({topic: topic})
@@ -15,12 +15,12 @@ async function runSendWelcomeEmail() {
             const {user, subject, info} = JSON.parse(message.value)
 
             const mailOptions = {
-                from: 'loterysystem@email.com',
+                from: 'admin@lubycash.com',
                 to: user.email,
                 subject: subject,
                 html: `
-                <h1> Welcome ${user.name} </h1>
-                <p> We look forward to betting with you! </p>`
+                <h1> Hello, ${user.name} </h1>
+                <p> Thanks for the registration! Your account status is as ${user.status} </p>`
             }
 
             transporter.sendMail(mailOptions, (err, info) => {
@@ -31,4 +31,4 @@ async function runSendWelcomeEmail() {
     })
 }
 
-module.exports = {runSendWelcomeEmail}
+module.exports = {runSendStatusEmail}

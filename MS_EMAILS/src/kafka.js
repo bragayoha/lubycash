@@ -1,7 +1,7 @@
 const {Kafka} = require('kafkajs')
 
 const kafka = new Kafka({
-    clientId: 'ms_api',
+    clientId: 'ms-email',
     brokers: ['localhost:9092'],
     retry: {
         initialRetryTime: 300,
