@@ -1,12 +1,19 @@
-import 'reflect-metadata'
-import './database/dataSource'
-
 import express from 'express'
-import kafka from './kafka'
+import { AppDataSource } from './database/dataSource'
 
-const consumer = kafka.consumer({groupId: 'create_new_client'})
-const topic = ''
+AppDataSource.initialize()
+    .then(() => {
+        const app = express()
+        
+        app.use(express.json())
 
-const app = express()
+        app.get('/', (req, res) => {
+            return res.json('Server is running')
+        })
 
-app.listen(3334, () => console.log('server is running'))
+        return app.listen(3334)
+
+    })
+    .catch((err) => {
+        console.log("Error during Data Source initialization", err)
+    })

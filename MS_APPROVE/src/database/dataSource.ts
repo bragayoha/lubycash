@@ -1,18 +1,17 @@
+import 'dotenv/config'
+import 'reflect-metadata'
 import { DataSource } from "typeorm"
 
-const AppDataSource = new DataSource({
+const port = 3307
+
+export const AppDataSource = new DataSource({
     type: "mysql",
-    host: "db-ms",
-    port: 3307,
-    username: "root",
-    password: "",
-    database: "ms-approve",
+    host: process.env.DB_HOST,
+    port: port,
+    username: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+    entities: [`${__dirname}/**/entities/*.{ts,js}`],
+    migrations: [`${__dirname}/**/migrations/*.{ts,js}`]
 })
 
-AppDataSource.initialize()
-    .then(() => {
-        console.log("Data Source has been initialized!")
-    })
-    .catch((err) => {
-        console.log("Error during Data Source initialization", err)
-    })
