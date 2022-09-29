@@ -12,10 +12,26 @@ Route.get('test_db_connection', async ({ response }: HttpContextContract) => {
   })
 })
 
+// Rotas publicas
 Route.group(() => {
   Route.post('login', 'AuthController.login')
+  Route.post('sign-up', 'ClientsController.store' )
+  Route.post('forget-password/:id', 'AuthController.forgetPassword')
+  Route.post('reset-password', 'AuthController.resetPassword')
 }).prefix('v1/api')
 
+// Rotas admin
 Route.group(() => {
-  Route.resource('admin', 'AdminsController')
-}).prefix('v1/api').middleware(['auth', 'is:admin'])
+  Route.resource('admin', 'AdminsController').apiOnly()
+  Route.get('client', 'ClientsController.index')
+  Route.get('pix/:id', 'PixController.index')
+}).prefix('v1/api')
+.middleware(['auth', 'is:admin'])
+
+// Rotas cliente
+Route.group(() => {
+  Route.get('client/info', 'ClientsController.show')
+  Route.put('client/update', 'ClientsController.update')
+  Route.post('pix', 'PixController.store')
+}).prefix('v1/api')
+.middleware(['auth', 'is:client'])

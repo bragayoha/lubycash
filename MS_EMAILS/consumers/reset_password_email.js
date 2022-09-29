@@ -1,11 +1,11 @@
 const kafka = require('../src/kafka')
 const transporter = require('../src/nodeMailer')
 
-const consumer = kafka.consumer({groupId: 'send_status_email'})
+const consumer = kafka.consumer({groupId: 'reset_password_email'})
 
-const topic = 'send_status_email'
+const topic = 'reset_password_email'
 
-async function runSendStatusEmail() {
+async function runResetPasswordEmail() {
     await consumer.connect()
 
     await consumer.subscribe({topic: topic})
@@ -20,15 +20,15 @@ async function runSendStatusEmail() {
                 subject: subject,
                 html: `
                 <h1> Hello, ${user.full_name} </h1>
-                <p> Thanks for the registration! Your account status is as ${user.status} </p>`
+                <p> Your token is: ${user.remember_me_token} </p>`
             }
 
             transporter.sendMail(mailOptions, (err, info) => {
                 if(err) console.log(err)
-                else console.log(`Message sent: ${info}`)
+                else console.log(`Message sent: ${info} \n ${message.value}`)
             })
         }
     })
 }
 
-module.exports = {runSendStatusEmail}
+module.exports = {runResetPasswordEmail}

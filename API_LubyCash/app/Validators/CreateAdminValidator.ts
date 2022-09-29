@@ -16,7 +16,7 @@ export default class CreateAdminValidator {
       rules.required(),
     ]),
     cpfNumber: schema.string({ trim: true }, [
-      rules.unique({ table: 'users', column: 'cpf' }),
+      rules.unique({ table: 'users', column: 'cpf_number' }),
       rules.regex(/^\d{3}.\d{3}.\d{3}-\d{2}$/),
       rules.required(),
     ]),

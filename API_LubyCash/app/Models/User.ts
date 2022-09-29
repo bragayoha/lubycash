@@ -1,16 +1,12 @@
 import { DateTime } from 'luxon'
 import { BaseModel, beforeCreate, beforeSave, column, ManyToMany, manyToMany } from '@ioc:Adonis/Lucid/Orm'
 
-import {compose} from '@ioc:Adonis/Core/Helpers'
-import { Filterable } from '@ioc:Adonis/Addons/LucidFilter'
-import ClientFilter from '../Models/Filters/ClientFilter'
-
 import {v4 as uuidv4} from 'uuid'
 import Role from './Role'
 import Hash from '@ioc:Adonis/Core/Hash'
 
-export default class User extends compose(BaseModel, Filterable) {
-  public static $filter = () => ClientFilter
+export default class User extends BaseModel {
+
 
   @column({ isPrimary: true })
   public id: number
@@ -18,7 +14,7 @@ export default class User extends compose(BaseModel, Filterable) {
   @column()
   public secureId: uuidv4
 
-  @column({serializeAs: null})
+  @column()
   public rememberMeToken?: string
 
   @column()

@@ -2,7 +2,7 @@ import 'dotenv/config'
 import 'reflect-metadata'
 import { DataSource } from "typeorm"
 
-const port = 3307
+const port = 3306
 
 export const AppDataSource = new DataSource({
     type: "mysql",

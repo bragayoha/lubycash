@@ -1,38 +1,27 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
+import Client from 'App/Models/Client'
 import Role from 'App/Models/Role'
 import User from 'App/Models/User'
-import CreateAdminValidator from 'App/Validators/CreateAdminValidator'
-import UpdateAdminValidator from 'App/Validators/UpdateAdminValidator'
+import { sendMail } from 'App/Services/sendMail'
+import CreateClientValidator from 'App/Validators/CreateClientValidator'
+import UpdateClientValidator from 'App/Validators/UpdateClientValidator'
 
 export default class ClientsController {
   public async index({request, response}: HttpContextContract) {
-    const {page, perPage, noPaginate, ...inputs} = request.qs()
-
-    if(noPaginate) {
-      return User.query().preload('roles', (roleTable) => {
-        roleTable.select('id', 'name')
-      }).filter(inputs)
-    }
-
     try {
-      const users = await User.query()
-      .preload('roles', (roleTable) => {
-        roleTable.select('id', 'name')
-      })
-      .filter(inputs)
-      .paginate(page || 1, perPage || 10)
+      const clients = await Client.query().filter(request.qs()).exec()
+      return response.ok(clients)
 
-      return response.ok(users)
     } catch (error) {
-      return response.badRequest({ message: 'Error in list users', originalError: error.message})
+      return response.badRequest({ message: 'Error in list clients', originalError: error.message})
     }
   }
 
   public async store({ request, response }: HttpContextContract) {
-    const data = await request.validate(CreateAdminValidator)
+    const data = await request.validate(CreateClientValidator)
 
-    let user
+    let user, client
 
     const trx = await Database.transaction()
 
@@ -46,80 +35,112 @@ export default class ClientsController {
         }, trx
       )
 
-      const roleAdmin = await Role.findBy('name', 'admin')
+      const roleClient = await Role.findBy('name', 'client')
 
-      if (roleAdmin) await user.related('roles').attach([roleAdmin.id])
+      if (roleClient) await user.related('roles').attach([roleClient.id])
+
+      let status, cBalance
+
+      if (data.averageSalary < 500){
+        status = 'disapproved'
+        cBalance = 0
+      }
+      else if (data.averageSalary >= 500){
+        status = 'approved'
+        cBalance = 200
+      }
+
+      client = await Client.create(
+        {
+          fullName: data.fullName,
+          email: data.email,
+          phone: data.phone,
+          cpfNumber: data.cpfNumber,
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zipcode: data.zipcode,
+          currentBalance: cBalance,
+          averageSalary: data.averageSalary,
+          status: status,
+        }
+      )
     } catch (error) {
       trx.rollback()
-      return response.badRequest({ message: 'Error in create user', originalError: error.message})
+      return response.badRequest({ message: 'Error in create client', originalError: error.message})
     }
 
-    let userFind
+    let clientFind
     try {
-      userFind = await User.query().where('id', user.id).preload('roles')
+      clientFind = await Client.query().where('id', client.id)
     } catch (error) {
       trx.rollback()
-      return response.badRequest({ message: 'Error in find user', originalError: error.message})
+      return response.badRequest({ message: 'Error in find client', originalError: error.message})
+    }
+
+    try {
+      await sendMail(client, 'Sign Up Status!', 'send_status_email')
+    } catch (error) {
+      trx.rollback()
+      return response.badRequest({ message: 'Error in send email', originalError: error.message })
     }
 
     trx.commit()
-    return response.ok({userFind})
+    return response.ok({client: clientFind})
   }
 
-  public async show({ response, params}: HttpContextContract) {
-    const userSecureId = params.id
+  public async show({ response, auth}: HttpContextContract) {
+    const clientCpf = auth.user?.cpfNumber
 
     try {
-      const user = await User.query()
-      .where('secure_id', userSecureId)
-      .preload('roles')
+      const client = await Client.findByOrFail('cpf_number', clientCpf)
 
-      return response.ok({user})
+      return response.ok({client: client})
     } catch (error) {
-      return response.notFound({ message: 'User not found', originalError: error.message})
+      return response.notFound({ message: 'Client not found', originalError: error.message})
     }
   }
 
-  public async update({ request, response, params}: HttpContextContract){
-    const data = await request.validate(UpdateAdminValidator)
+  public async update({ request, response, auth}: HttpContextContract){
+    const data = await request.validate(UpdateClientValidator)
 
-    const userSecureId = params.id
-
-    let user
+    let user, client
 
     const trx = await Database.transaction()
 
     try {
-      user = await User.findByOrFail('secure_id', userSecureId)
-      user.merge({fullName: data.fullName, email: data.email, cpfNumber: data.cpfNumber }, trx).save()
+      const clientCpf = auth.user?.cpfNumber
+      client = await Client.findByOrFail('cpf_number', clientCpf)
+
+      client.merge({
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        cpfNumber: data.cpfNumber,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        zipcode: data.zipcode,
+      }, trx).save()
+
+      user = await User.findByOrFail('cpfNumber', data.cpfNumber)
+
+      user.merge({ fullName: data.fullName, email: data.email, cpfNumber: data.cpfNumber }, trx).save()
     } catch (error) {
       trx.rollback()
-      return response.badRequest({ message: 'Error in update user', originalError: error.message})
+      return response.badRequest({ message: 'Error in update client', originalError: error.message})
     }
 
-    let userFind
+    let clientFind
 
     try {
-      userFind = await User.query().where('id', user.id).preload('roles')
+      clientFind = await Client.query().where('id', client.id)
     } catch (error) {
       trx.rollback()
       return response.badRequest({ message: 'Error in find user', originalError: error.message})
     }
 
     trx.commit()
-    return response.ok({userFind})
-  }
-
-  public async destroy({ response, params }: HttpContextContract) {
-    const userSecureId = params.id
-
-    try {
-      const user = await User.findByOrFail('secure_id', userSecureId)
-      await user.delete()
-
-      return response.ok({message: 'Success in delete user'})
-    } catch (error) {
-      return response.notFound({message: 'User not found', originalError: error.message})
-    }
+    return response.ok({clientFind})
   }
 }
