@@ -4,6 +4,7 @@ import { DataSource } from "typeorm"
 
 const port = 3306
 
+
 export const AppDataSource = new DataSource({
     type: "mysql",
     host: process.env.DB_HOST,
@@ -14,4 +15,5 @@ export const AppDataSource = new DataSource({
     entities: [`${__dirname}/**/entities/*.{ts,js}`],
     migrations: [`${__dirname}/**/migrations/*.{ts,js}`]
 })
+
 

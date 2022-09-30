@@ -56,13 +56,22 @@ export default class PixController {
   }
 
   public async index({request, response, params}: HttpContextContract) {
+    const {createdAt} = request.qs()
     const client = await Client.findByOrFail('cpf_number', params.id)
 
     if(client.status !== 'approved') return response.badRequest({message: `Client ${client.fullName} is not approved`})
 
     try {
-      const sourcePix = await Pix.query().where('client_id', client.id).filter(request.qs()).exec()
-      const targetPix = await Pix.query().where('target_cpf', client.cpfNumber).filter(request.qs()).exec()
+      let sourcePix
+      let targetPix
+
+      if(createdAt){
+        sourcePix = await Database.from('pixes').where('client_id', client.id).andWhereBetween('created_at', [createdAt[0], createdAt[1]])
+        targetPix = await Database.from('pixes').where('target_cpf', client.cpfNumber).andWhereBetween('created_at', [createdAt[0], createdAt[1]])
+      }else{
+        sourcePix = await Pix.query().where('client_id', client.id).filter(request.qs()).exec()
+        targetPix = await Pix.query().where('target_cpf', client.cpfNumber).filter(request.qs()).exec()
+      }
 
       return response.ok({source: sourcePix, target: targetPix})
     } catch (error) {

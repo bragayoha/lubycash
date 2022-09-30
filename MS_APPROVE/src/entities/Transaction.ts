@@ -20,4 +20,5 @@ export class Transaction {
     @ManyToOne(() => Client, client => client.id)
     @JoinColumn({ name: "target_client_id" })
     target_client: Client;
+
 }

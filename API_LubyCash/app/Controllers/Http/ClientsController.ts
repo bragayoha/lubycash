@@ -9,8 +9,15 @@ import UpdateClientValidator from 'App/Validators/UpdateClientValidator'
 
 export default class ClientsController {
   public async index({request, response}: HttpContextContract) {
+    const {createdAt, status} = request.qs()
     try {
-      const clients = await Client.query().filter(request.qs()).exec()
+      let clients
+      if(createdAt){
+        clients = await Database.from('clients').whereBetween('created_at', [createdAt[0], createdAt[1]])
+      }
+      else if(status){
+        clients = await Database.from('clients').where('status', status)
+      }
       return response.ok(clients)
 
     } catch (error) {

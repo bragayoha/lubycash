@@ -6,10 +6,10 @@ export default class ClientFilter extends BaseModelFilter {
   public $query: ModelQueryBuilderContract<typeof Client, Client>
 
   status(value: string){
-    this.$query.where('status', 'LIKE', `%${value}%`)
+    this.$query.where('status', '=', `%${value}%`)
   }
 
-  createdAt(value: string){
-    this.$query.where('created_at', '>', `%${value}%`)
+  createdAt(value1: string, value2: string){
+    this.$query.where('created_at', 'BETWEEN', [`%${value1}%`, `%${value2}%`])
   }
 }

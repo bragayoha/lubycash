@@ -18,6 +18,7 @@ export default class CreateClientValidator {
     phone: schema.string({trim: true}, [
       rules.required(),
       rules.regex(/^\([1-9]{2}\) (?:[2-8]|9[1-9])[0-9]{3}\-[0-9]{4}$/),
+      rules.unique({table: 'clients', column: 'phone'})
     ]),
     cpfNumber: schema.string({ trim: true }, [
       rules.unique({ table: 'clients', column: 'cpf_number' }),

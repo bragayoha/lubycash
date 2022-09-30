@@ -11,7 +11,6 @@ AppDataSource.initialize()
         app.use(routes)
 
         return app.listen(3334)
-
     })
     .catch((err) => {
         console.log("Error during Data Source initialization", err)

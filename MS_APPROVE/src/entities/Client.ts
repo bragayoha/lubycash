@@ -51,4 +51,5 @@ export class Client {
 
     @OneToMany(() => Transaction, transaction => transaction.target_client)
     target_transactions: Transaction[]
+
 }
